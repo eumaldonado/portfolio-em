@@ -1,0 +1,23 @@
+---
+title: "Design Final Project STAT 385"
+author: "Eugenia Maldonado"
+date: "5/14/2020"
+output: html_document
+---
+
+### STAT 385: Analysis of Incarcerated Subjects by Race
+
+#### Dataset:
+The data set used for this project was the Champaign County Sheriff Office (CCSO) dataset.
+
+#### Data Wrangling:
+
+The data was narrowed down to show the 6 most common incarceration reasons and the 10 most common crimes committed in order to make the analysis more concise. 
+Also, the education level was modified to combine all high schools into one single level called "Attending High School".Furthermore, the city levels were also narrowed down to include only the 10 top ocurring cities in the data.
+
+
+#### Goals
+
+As we know, discrimination is still very present in today's society, and it is of particular interest to explore if discrimination and implicit bias play a role in the determination of incarceration reasons of subjects of particular races in the Champaign County. If the study shows no discrimination, we should find that for all races, the proportion of released vs. incarcerated subjects is fairly similar for all races for the same crimes. However, if there are significant differences between these proportions between races, there is evidence of discrimination.
+
+Furthermore, it would be of particular interest to investigate those cases that the University Police deals with compared with the county's police in order to determine if there is a difference in how these cases are handled by these institutions
