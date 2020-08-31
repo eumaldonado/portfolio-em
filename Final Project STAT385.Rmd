@@ -1,0 +1,139 @@
+---
+title: "Analysis of Incarcerated Subjects by Race"
+author: "Eugenia Maldonado"
+date: "5/2/2020"
+output: html_document
+runtime: shiny
+---
+
+```{r echo=FALSE,warning=FALSE, comment=FALSE,message=FALSE}
+library(ggplot2)
+library(data.table)
+library(dplyr)
+library(shiny)
+
+ccso<-read.csv("~/Desktop/STAT385/esm3/homework/HW7/CCSO.csv")
+
+```
+
+```{r, echo=FALSE}
+# Number of people incarcerated per race per incarceration reason
+inc_reasons<-sort(apply(table(ccso$RACE,ccso$INCARCERATION.REASON),2,sum),decreasing=TRUE)[1:6]
+inc_reasons<-names(inc_reasons)
+
+#Selecting data for most common incarceration reasons
+ccso2<-ccso[ccso$INCARCERATION.REASON %in% inc_reasons,]
+
+#Selecting only crimes that are most common
+
+crimes<-names(sort(rowSums(table(ccso2$CRIME.CODE,ccso2$RACE)),decreasing = TRUE))[1:10]
+
+# Defining a dataframe that only includes these crimes
+ccso3<-ccso2[ccso2$CRIME.CODE %in% crimes,]
+
+```
+
+
+```{r,echo=FALSE}
+
+# Unifying all "High School" levels into one: "Attending High School"
+
+ccso3$SCHOOL<-as.character(ccso3$SCHOOL)
+
+for (i in 1:nrow(ccso3)){
+  if (grepl("High School",ccso3$SCHOOL[i])==TRUE){
+    ccso3$SCHOOL[i]<-"Attending High School"}
+  else{
+    ccso3$SCHOOL[i]<-ccso3$SCHOOL[i]}
+  }
+
+
+ccso3$SCHOOL<-factor(ccso3$SCHOOL)
+
+# Evaluating 5 most common education levels
+schooling<-names(sort(table(ccso3$SCHOOL),decreasing=TRUE))[1:5]
+
+
+```
+
+```{r,echo=FALSE}
+cities<-names(sort(table(ccso$CITY),decreasing = TRUE)[1:10])
+options(shiny.browser=TRUE)
+
+
+ui <- fluidPage(
+   br(),
+   br(),
+   br(),
+  sidebarLayout(position="right",
+    sidebarPanel(
+       selectInput(inputId = "crime_code",label="Crime Code",choices=crimes),
+       selectInput(inputId = "city1",label="City #1",choices = cities,selected = "CHAMPAIGN"),
+       selectInput(inputId = "city2",label="City #2",choices = cities,selected = "URBANA"),
+       sliderInput("age","Age of Offender",min=16,max=116,value=c(40,50)),
+       checkboxGroupInput("educ","Education Level",choices=schooling,selected = schooling)),
+    
+    mainPanel(
+      br(),
+    plotOutput("barplot1"),
+    br(),
+    plotOutput("barplot2"))
+    ))
+
+server<-function(input,output){
+  
+  output$barplot1<-renderPlot({
+    
+    data_temp = ccso3
+    data_temp = ccso3[ccso3$CRIME.CODE==input$crime_code &
+                         ccso3$INCARCERATION.REASON!="" &
+                         ccso3$CITY==input$city1 &
+                         ccso3$Age.at.Arrest %in% seq(input$age[1],input$age[2]) &
+                         ccso3$SCHOOL %in% input$educ,]
+    
+       ggplot(data=data_temp)+
+         geom_bar(mapping=aes(x=RACE,fill=INCARCERATION.REASON),color="Black")+
+         coord_flip()+
+         labs(x="Race",y="Number of Bookings per City",fill="Incarceration Reason")+
+         ggtitle(paste("Number of Bookings of people of ages" ,input$age[1],"-",input$age[2],"for",tolower(input$crime_code)))+
+         theme(
+           axis.title.x =element_text(color="black",size=16,face="bold",margin =margin(t=20,r=0,b=0,l=0)),
+           axis.title.y =element_text(color="black",size=16,face="bold"),
+           plot.title = element_text(color="black",size=14,hjust=0.5),
+           axis.text=element_text(size=12)
+           )})
+       
+    output$barplot2<-renderPlot({
+    
+    data_temp = ccso3
+    data_temp = ccso3[ccso3$CRIME.CODE==input$crime_code &
+                         ccso3$INCARCERATION.REASON!="" &
+                         ccso3$CITY==input$city2 &
+                         ccso3$Age.at.Arrest %in% seq(input$age[1],input$age[2]) &
+                         ccso3$SCHOOL %in% input$educ,]
+    
+       ggplot(data=data_temp)+
+         geom_bar(mapping=aes(x=RACE,fill=INCARCERATION.REASON),color="Black")+
+         coord_flip()+
+         labs(x="Race",y="Number of Bookings per City",fill="Incarceration Reason")+
+         ggtitle(paste("Number of Bookings of people of ages" ,input$age[1],"-",input$age[2],"for",tolower(input$crime_code)))+
+         theme(
+           axis.title.x =element_text(color="black",size=16,face="bold",margin =margin(t=20,r=0,b=0,l=0)),
+           axis.title.y =element_text(color="black",size=16,face="bold"),
+           plot.title = element_text(color="black",size=14,hjust=0.5),
+           axis.text=element_text(size=12)
+           )
+  }
+)}
+
+shinyApp(ui=ui,server=server)
+```
+
+
+
+
+
+
+
+
+
